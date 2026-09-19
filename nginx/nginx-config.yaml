@@ -1,0 +1,29 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: production
+data:
+  nginx.conf: |
+    events {}
+
+    http {
+      upstream express_backend {
+        server node-express-app.production.svc.cluster.local:80;
+      }
+
+      server {
+        listen 80;
+        server_name _;
+
+        location / {
+          proxy_pass http://express_backend;
+
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
